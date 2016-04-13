@@ -1,0 +1,111 @@
+def gameLoop():
+
+    pygame.display.set_caption('A bit Knightey')
+
+    fps = 60
+    display_width = 800
+    display_height = 600
+
+    x = display_width * 0.45
+    y = display_height * 0.8
+
+    #x_change = 0
+
+    
+
+    shit_startx = random.randrange(0, display_width)
+    shit_starty = 100
+
+    clock = pygame.time.Clock()
+
+    
+    background = pygame.image.load('mountain.png')
+    clouds = pygame.image.load('clouds.png')
+    
+    gameDisplay = pygame.display.set_mode((display_width, display_height))
+    
+    knight = Knight(gameDisplay, x, y)
+
+    
+
+    
+    gameExit = False
+
+    gameDisplay.fill(Colors.black)
+    gameDisplay.blit(clouds,(200, 1))
+    gameDisplay.blit(background, (200,300))
+    knight.drawKnight()
+
+    cloud_y = 1
+    cloud_down = False
+
+    pygame.key.set_repeat(10,80)
+    #message_display("NAKURWIAJ!!", display_width, display_height, gameDisplay)
+    while not gameExit:
+
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                gameExit = True
+
+
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    gameDisplay.fill(Colors.black)
+                    gameDisplay.blit(clouds,(200, cloud_y))
+                    gameDisplay.blit(background, (200,300))
+                    knight.moveLeft()
+                    
+                elif event.key == pygame.K_RIGHT:
+                    gameDisplay.fill(Colors.black)
+                    gameDisplay.blit(clouds,(200, cloud_y))
+                    gameDisplay.blit(background, (200,300))
+                    knight.moveRight()
+
+                elif event.key == pygame.K_RIGHT && pygame.K_UP:
+                    gameDisplay.fill(Colors.black)
+                    gameDisplay.blit(clouds,(200, cloud_y))
+                    gameDisplay.blit(background, (200,300))
+                    knight.jumpRight()
+                    
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    quit()
+
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    gameDisplay.fill(Colors.black)
+                    gameDisplay.blit(clouds,(200, cloud_y))
+                    gameDisplay.blit(background, (200,300))
+                    knight.drawKnight()
+                    
+
+
+            print(event)
+
+        if knight.x > display_width - knight.knightWidth:
+            knight.x = display_width - knight.knightWidth
+        elif knight.x < 0:
+            knight.x = 0
+        else:
+            knight.x += knight.speed
+
+        
+        if shit_starty >= display_height * 0.8:
+            shit_starty = display_height * 0.8
+        else:
+            shit_starty += 5
+                            
+        shit1 = shits(shit_startx, shit_starty, 50, 50, Colors.white, gameDisplay)
+
+
+        
+        
+        pygame.display.update()
+        clock.tick_busy_loop(fps)
+
+        if knight.anim < 7:
+            knight.anim += 1
+        else:
+            knight.anim = 0
