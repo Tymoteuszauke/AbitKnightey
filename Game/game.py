@@ -15,11 +15,16 @@ class Knight(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.knightImg = pygame.image.load('Sprites/stand.png')
+        self.knightImgL = pygame.image.load('Sprites/stand_lft.png')
         self.display = display
         self.speed = 0
         self.maxSpeed = 7
         self.anim = 0
+        self.attackStance = 0
         self.knightWidth = 60
+
+        self.isAttacking = False;
+        self.isRight = True;
 
         self.rect = self.knightImg.get_rect()
 
@@ -50,11 +55,30 @@ class Knight(pygame.sprite.Sprite):
         self.arrayL.append(pygame.image.load('Sprites/left7.png'))
         self.arrayL.append(pygame.image.load('Sprites/left8.png'))
 
+        self.arrayAttackR = []
+        self.arrayAttackR.append(pygame.image.load('Sprites/swing_r_1.png'))
+        self.arrayAttackR.append(pygame.image.load('Sprites/swing_r_2.png'))
+        self.arrayAttackR.append(pygame.image.load('Sprites/swing_r_3.png'))
+        self.arrayAttackR.append(pygame.image.load('Sprites/swing_r_4.png'))
+        self.arrayAttackR.append(pygame.image.load('Sprites/swing_r_5.png'))
+
+        self.arrayAttackL = []
+        self.arrayAttackL.append(pygame.image.load('Sprites/swing_l_1.png'))
+        self.arrayAttackL.append(pygame.image.load('Sprites/swing_l_2.png'))
+        self.arrayAttackL.append(pygame.image.load('Sprites/swing_l_3.png'))
+        self.arrayAttackL.append(pygame.image.load('Sprites/swing_l_4.png'))
+        self.arrayAttackL.append(pygame.image.load('Sprites/swing_l_5.png'))
+
+
 
     def drawKnight(self):
 
         self.speed = 0
-        self.display.blit(self.knightImg, (self.x, self.y))
+        if self.isRight == True:
+            self.display.blit(self.knightImg, (self.x, self.y))
+        else:
+            self.display.blit(self.knightImgL, (self.x, self.y))
+
         self.anim = 0
         self.rect = self.knightImg.get_rect()
 
@@ -65,11 +89,16 @@ class Knight(pygame.sprite.Sprite):
 
     def moveRight(self):
         self.speed += 1
+        self.isRight = True
         if self.speed >= self.maxSpeed:
             self.speed = +self.maxSpeed
 
         
         self.display.blit(self.arrayR[self.anim], (self.x, self.y))
+
+
+
+
         self.rect.move(self.x, self.y)
         self.rect.topleft = (self.x, self.y)
         self.rect.bottomright = (self.x + self.image_w, self.y + self.image_h)
@@ -80,8 +109,10 @@ class Knight(pygame.sprite.Sprite):
 
     def moveLeft(self):
         self.speed -= 1
+        self.isRight = False
         if self.speed <= -self.maxSpeed:
             self.speed = -self.maxSpeed
+
 
         
         self.display.blit(self.arrayL[self.anim], (self.x, self.y))
@@ -92,8 +123,43 @@ class Knight(pygame.sprite.Sprite):
         self.rect.bottomright = (self.x + 50 + self.image_w, self.y + self.image_h)
 
 
-    def jumpRight(self):
-        self.speed += 2
+    def attack(self):
+
+
+        if self.isRight == True:
+            self.speed += 1
+            if self.speed >= self.maxSpeed:
+                self.speed = +self.maxSpeed
+
+
+
+            
+            self.display.blit(self.arrayAttackR[self.attackStance], (self.x, self.y))
+
+            self.rect = self.arrayAttackR[self.attackStance].get_rect()
+
+            self.rect.move(self.x, self.y)
+            self.rect.topleft = (self.x, self.y)
+            self.rect.bottomright = (self.x + self.image_w, self.y + self.image_h)
+
+            
+
+        else:
+            self.speed -= 1
+            if self.speed >= self.maxSpeed:
+                self.speed = +self.maxSpeed
+
+            self.display.blit(self.arrayAttackL[self.attackStance], (self.x, self.y))
+            self.rect = self.arrayAttackL[self.attackStance].get_rect()
+            self.rect.move(self.x, self.y)
+            self.rect.topleft = (self.x, self.y)
+            self.rect.bottomright = (self.x + self.image_w, self.y + self.image_h)
+            
+
+
+
+        
+        
 
 
 class Shit(pygame.sprite.Sprite):
@@ -146,7 +212,7 @@ class Engine:
         self.x = self.display_width * 0.45
         self.y = self.display_height * 0.8
 
-        self.shit_startx = random.randrange(0, self.display_width)
+        self.shit_startx = random.randrange(0, self.display_width-50)
         self.shit_starty = 100
 
         self.clock = pygame.time.Clock()
@@ -167,6 +233,8 @@ class Engine:
         self.cloud_y = 1
         self.cloud_down = False
 
+        self.points = 5;
+
         self.shit1 = Shit(self.gameDisplay, self.shit_startx, self.shit_starty)
 
         pygame.key.set_repeat(10,80)
@@ -185,10 +253,16 @@ class Engine:
 
         pygame.display.update()
 
-        time.sleep(3)
+    def pointsDisplay(self, text, disW, disH, display):
+        largeText = pygame.font.SysFont('freesandbold.ttf', 50)
+        TextSurf, TextRect = self.text_objects(text, largeText)
+        TextRect.center = (disW/5, disH/5)
+        display.blit(TextSurf, TextRect)
+
 
     def crash(self):
         self.message_display("You died")
+
 
     def gameLoop(self):
 
@@ -205,6 +279,7 @@ class Engine:
                         self.gameDisplay.fill(Colors.black)
                         self.gameDisplay.blit(self.clouds,(200, self.cloud_y))
                         self.gameDisplay.blit(self.background, (200,300))
+                        self.shit1.drawRect();
                         self.knight.moveLeft()
 
                         if self.knight.anim < 7:
@@ -219,6 +294,7 @@ class Engine:
                         self.gameDisplay.blit(self.clouds,(200, self.cloud_y))
                         self.gameDisplay.blit(self.background, (200,300))
                         self.knight.moveRight()
+                        self.shit1.drawRect();
 
                         if self.knight.anim < 7:
                             self.knight.anim += 1
@@ -226,6 +302,21 @@ class Engine:
                         else:
                             self.knight.anim = 0
 
+                    elif self.event.key == pygame.K_SPACE:
+
+                       
+                        self.gameDisplay.fill(Colors.black)
+                        self.gameDisplay.blit(self.clouds,(200, self.cloud_y))
+                        self.gameDisplay.blit(self.background, (200,300))
+                        self.knight.attack()
+                        self.knight.isAttacking = True;
+                        self.shit1.drawRect();
+
+                        if self.knight.attackStance < 4:
+                            self.knight.attackStance += 1
+                            print(self.knight.attackStance)
+                        else:
+                            self.knight.attackStance = 0
 
                         
                     elif self.event.key == pygame.K_ESCAPE:
@@ -233,11 +324,14 @@ class Engine:
                         quit()
 
                 if self.event.type == pygame.KEYUP:
-                    if self.event.key == pygame.K_LEFT or self.event.key == pygame.K_RIGHT:
+                    if self.event.key == pygame.K_LEFT or self.event.key == pygame.K_RIGHT or self.event.key == pygame.K_SPACE:
                         self.gameDisplay.fill(Colors.black)
                         self.gameDisplay.blit(self.clouds,(200, self.cloud_y))
                         self.gameDisplay.blit(self.background, (200,300))
                         self.knight.drawKnight()
+                        self.shit1.drawRect();
+
+
                         
 
 
@@ -250,7 +344,7 @@ class Engine:
             else:
                 self.knight.x += self.knight.speed
 
-
+            self.shit1.drawRect();
 
             
             if self.shit1.y >= self.display_height * 0.8:
@@ -258,11 +352,19 @@ class Engine:
             else:
                 self.shit1.y += 5
 
- 
-            self.shit1.drawRect()
+            self.pointsDisplay(str(self.points), self.display_width, self.display_height, self.gameDisplay)
+            
 
             if pygame.sprite.collide_rect(self.knight, self.shit1):
-                quit()
+                if self.knight.isAttacking == True:
+                    self.points += 10
+                    self.shit1.y = 100
+                    self.shit1.x = random.randrange(0, self.display_width-50)
+                
+
+                else:
+                    quit()
+
 
             pygame.display.update()
 
